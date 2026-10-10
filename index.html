@@ -55,6 +55,12 @@
             gap: 12px;
         }
 
+        .loading-text {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
         .exercise-btn {
             background: #212532;
             border: 1px solid #2e3447;
@@ -94,19 +100,8 @@
     <p>Elige un ejercicio de la guía para visualizar:</p>
     
     <div id="btn-container" class="btn-container">
-        <!-- Lista estática de respaldo inicial escrita directamente en el HTML -->
-        <a href="./ejercicio5/" class="exercise-btn">
-            <span>📁 ejercicio5</span>
-            <span class="badge">Abrir ↗</span>
-        </a>
-        <a href="./ejercicio6/" class="exercise-btn">
-            <span>📁 ejercicio6</span>
-            <span class="badge">Abrir ↗</span>
-        </a>
-        <a href="./ejercicio7/" class="exercise-btn">
-            <span>📁 ejercicio7</span>
-            <span class="badge">Abrir ↗</span>
-        </a>
+        <!-- Sin nombres viejos hardcodeados -->
+        <span class="loading-text">Cargando ejercicios...</span>
     </div>
 </div>
 
@@ -114,28 +109,26 @@
     async function cargarEjercicios() {
         const container = document.getElementById('btn-container');
 
-        // Extrae el usuario y el repositorio dinámicamente según la URL en GitHub Pages
         const hostParts = window.location.hostname.split('.');
         const pathParts = window.location.pathname.split('/').filter(Boolean);
 
         const USER = hostParts[0];  
         const REPO = pathParts[0];  
 
-        // Verifica que estemos ejecutando dentro de GitHub Pages
         if (!window.location.hostname.endsWith('github.io') || !USER || !REPO) {
-            console.warn("Detección de GitHub Pages no activa. Comprobando caché en navegador...");
             const cache = localStorage.getItem('cache_carpetas');
             if (cache) renderizar(JSON.parse(cache));
+            else container.innerHTML = '<span class="loading-text">Detección no disponible fuera de GitHub Pages</span>';
             return;
         }
 
         try {
-            const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents`);
+            // ?t=${Date.now()} evita que el navegador guarde en caché respuestas viejas de la API
+            const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents?t=${Date.now()}`);
             if (!res.ok) throw new Error("Límite de API alcanzado o error de red");
 
             const data = await res.json();
             
-            // Filtra y obtiene los nombres exactos de las carpetas sin modificar
             const carpetas = data
                 .filter(item => item.type === 'dir' && !item.name.startsWith('.'))
                 .map(item => item.name)
@@ -146,13 +139,12 @@
                 renderizar(carpetas);
             }
         } catch (e) {
-            console.warn("Error con la API de GitHub:", e.message);
-            // Si la API falla por cuota, recupera la caché del navegador
             const cache = localStorage.getItem('cache_carpetas');
             if (cache) {
                 renderizar(JSON.parse(cache));
+            } else {
+                container.innerHTML = '<span class="loading-text">No se pudieron cargar los ejercicios.</span>';
             }
-            // Si no hay caché, se conservan intactos los enlaces del HTML
         }
 
         function renderizar(lista) {
