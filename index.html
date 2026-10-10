@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Menú de Ejercicios</title>
+    <title>Menú de Ejercicios</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
@@ -94,57 +94,78 @@
     <p>Selecciona la guía de trabajos prácticos que deseas visualizar:</p>
     
     <div id="btn-container" class="btn-container">
-        <!-- Lista por defecto para que NUNCA aparezca la pantalla en blanco -->
+        <!-- Lista estática de respaldo inicial escrita directamente en el HTML -->
         <a href="./ejercicio5/" class="exercise-btn">
-            <span>📁 Ejercicio 5</span>
+            <span>📁 ejercicio5</span>
             <span class="badge">Abrir ↗</span>
         </a>
         <a href="./ejercicio6/" class="exercise-btn">
-            <span>📁 Ejercicio 6</span>
+            <span>📁 ejercicio6</span>
+            <span class="badge">Abrir ↗</span>
+        </a>
+        <a href="./ejercicio7/" class="exercise-btn">
+            <span>📁 ejercicio7</span>
             <span class="badge">Abrir ↗</span>
         </a>
     </div>
 </div>
 
 <script>
-    const USER = 'enegdev';
-    const REPO = 'UPSO_Ejercicio_6';
-
-    async function cargarEjerciciosDinamicos() {
+    async function cargarEjercicios() {
         const container = document.getElementById('btn-container');
-        try {
-            const response = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents`);
-            if (!response.ok) return; // Si falla la API, conserva los botones fijos por defecto
 
-            const items = await response.json();
-            const carpetas = items.filter(item => item.type === 'dir' && item.name.toLowerCase().startsWith('ejercicio'));
+        // Extrae el usuario y el repositorio dinámicamente según la URL en GitHub Pages
+        const hostParts = window.location.hostname.split('.');
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+
+        const USER = hostParts[0];  
+        const REPO = pathParts[0];  
+
+        // Verifica que estemos ejecutando dentro de GitHub Pages
+        if (!window.location.hostname.endsWith('github.io') || !USER || !REPO) {
+            console.warn("Detección de GitHub Pages no activa. Comprobando caché en navegador...");
+            const cache = localStorage.getItem('cache_carpetas');
+            if (cache) renderizar(JSON.parse(cache));
+            return;
+        }
+
+        try {
+            const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents`);
+            if (!res.ok) throw new Error("Límite de API alcanzado o error de red");
+
+            const data = await res.json();
+            
+            // Filtra y obtiene los nombres exactos de las carpetas sin modificar
+            const carpetas = data
+                .filter(item => item.type === 'dir' && !item.name.startsWith('.'))
+                .map(item => item.name)
+                .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
             if (carpetas.length > 0) {
-                carpetas.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-                container.innerHTML = ''; // Limpia y dibuja la lista dinamica si la API responde con exito
-
-                carpetas.forEach(folder => {
-                    const link = document.createElement('a');
-                    link.href = `./${folder.name}/`;
-                    link.className = 'exercise-btn';
-
-                    const textoFormateado = folder.name.replace(/([a-zA-Z]+)(\d+)/, (m, p1, p2) => {
-                        return p1.charAt(0).toUpperCase() + p1.slice(1) + ' ' + p2;
-                    });
-
-                    link.innerHTML = `
-                        <span>📁 ${textoFormateado}</span>
-                        <span class="badge">Abrir ↗</span>
-                    `;
-                    container.appendChild(link);
-                });
+                localStorage.setItem('cache_carpetas', JSON.stringify(carpetas));
+                renderizar(carpetas);
             }
-        } catch (error) {
-            console.warn("Usando lista estática de respaldo:", error);
+        } catch (e) {
+            console.warn("Error con la API de GitHub:", e.message);
+            // Si la API falla por cuota, recupera la caché del navegador
+            const cache = localStorage.getItem('cache_carpetas');
+            if (cache) {
+                renderizar(JSON.parse(cache));
+            }
+            // Si no hay caché, se conservan intactos los enlaces del HTML
+        }
+
+        function renderizar(lista) {
+            container.innerHTML = lista.map(nombre => `
+                <a href="./${nombre}/" class="exercise-btn">
+                    <span>📁 ${nombre}</span>
+                    <span class="badge">Abrir ↗</span>
+                </a>
+            `).join('');
         }
     }
 
-    cargarEjerciciosDinamicos();
+    cargarEjercicios();
 </script>
 
 </body>
