@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ejercicio Interactivo </title>
+    <title>Ejercicio Interactivo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -152,18 +152,49 @@
         .check-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
         .check-card.completed { opacity: 0.5; text-decoration: line-through; }
 
-        /* Delivery Card */
+        /* Extra Challenge Card (Sección 4) */
+        .challenge-card {
+            background: #1e1b2e;
+            border: 1px solid #6366f1;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .challenge-badge {
+            background: #4338ca;
+            color: #c7d2fe;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 12px;
+            align-self: flex-start;
+            text-transform: uppercase;
+        }
+
+        /* Delivery Card (Sección 5) */
         .delivery-card { background: var(--editor-bg); border-radius: 10px; border: 1px solid var(--border-color); padding: 24px; display: flex; flex-direction: column; gap: 20px; }
-        .delivery-group { display: flex; flex-direction: column; gap: 10px; }
+        .delivery-group { display: flex; flex-direction: column; gap: 12px; }
         .delivery-label { font-size: 0.95rem; font-weight: 700; color: var(--text-bright); display: flex; align-items: center; gap: 8px; }
 
+        /* Botón de Drive Corregido */
         .drive-btn {
-            background: #10b981; color: #042f2e; font-weight: 700; padding: 12px 20px;
-            border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-            font-size: 0.9rem; transition: 0.2s; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            background: #10b981; 
+            color: #042f2e; 
+            font-weight: 700; 
+            padding: 12px 22px;
+            border-radius: 8px; 
+            text-decoration: none; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px;
+            font-size: 0.92rem; 
+            transition: 0.2s ease; 
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
             align-self: flex-start;
         }
-        .drive-btn:hover { background: #34d399; transform: translateY(-1px); }
+        .drive-btn:hover { background: #34d399; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35); }
 
         .input-subtext { font-size: 0.85rem; color: var(--text-muted); }
 
@@ -252,17 +283,33 @@
         </div>
     </div>
 
-    <!-- Section 4: Delivery via Google Drive -->
+    <!-- Section 4: Desafío Extra / Agregado de Cátedra (NUEVA SECCIÓN) -->
     <div class="panel">
-        <div class="section-title">4. Entrega del Proyecto</div>
+        <div class="section-title">4. Desafío Extra de Cátedra ⚡</div>
+        <div class="challenge-card">
+            <span class="challenge-badge">Requisito Obligatorio de Entrega</span>
+            <p style="color: var(--text-bright); font-weight: 600; font-size: 0.95rem;">
+                Para validar que comprendiste el ejercicio base, debes implementar la siguiente modificación antes de realizar la entrega:
+            </p>
+            <ul style="color: var(--text-main); margin-left: 20px; font-size: 0.9rem; display: flex; flex-direction: column; gap: 8px;">
+                <li><strong>Modificación de UI / Parámetro:</strong> Agrega un campo de texto extra para que el jugador elija su propio <em>Nombre de Usuario</em> antes de conectarse.</li>
+                <li><strong>Sincronización:</strong> El nombre asignado debe mostrarse arriba de la cabeza del personaje junto a su ID en red.</li>
+                <li><strong>Comentario explicativo:</strong> En el script entregado, añade un comentario de 3 líneas explicando cómo funciona la línea de instanciación del jugador.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Section 5: Delivery via Google Drive (CORREGIDA) -->
+    <div class="panel">
+        <div class="section-title">5. Entrega del Proyecto 📂</div>
         <div class="delivery-card">
             <div class="delivery-group">
                 <label class="delivery-label">Sube la Build ejecutable (.exe) + la carpeta de scripts de tu proyecto</label>
                 <p class="input-subtext" style="font-size: 0.9rem; color: var(--text-bright);">
-                    Exporta la build en formato <strong>.exe</strong> (junto a sus archivos/carpetas de datos adjuntos) e incluye la <strong>carpeta de scripts</strong> del proyecto. Comprímelo todo en un archivo <strong>.zip</strong> o <strong>.rar</strong> y súbelo a la carpeta compartida en Google Drive.
+                    Exporta la build en formato <strong>.exe</strong> (junto a sus archivos/carpetas de datos adjuntos) e incluye la <strong>carpeta de scripts</strong> con el desafío extra implementado. Comprímelo todo en un archivo <strong>.zip</strong> o <strong>.rar</strong> y súbelo a la carpeta compartida en Google Drive.
                 </p>
-                <div style="margin-top: 8px;">
-                    <a href="https://drive.google.com/drive/folders/1QJjIL74cvWPXQSTeV2HgOdQNiicZ5TIB?usp=sharing">
+                <div style="margin-top: 10px;">
+                    <a href="https://drive.google.com/drive/folders/1QJjIL74cvWPXQSTeV2HgOdQNiicZ5TIB?usp=sharing" target="_blank" class="drive-btn">
                         📂 Abrir Carpeta de Entrega en Google Drive ↗
                     </a>
                 </div>
