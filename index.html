@@ -451,7 +451,6 @@
 
                         materiasData.push({
                             folderName: carpetaMateria,
-                            displayName: obtenerNombreOficial(carpetaMateria),
                             tps: tps
                         });
                     }
@@ -482,7 +481,7 @@
                     <button class="materia-header-btn" onclick="toggleMateria(${idx})">
                         <div class="materia-info">
                             <span class="materia-icon">📁</span>
-                            <span class="materia-title">${materia.displayName}</span>
+                            <span class="materia-title">${obtenerNombreOficial(materia.folderName)}</span>
                         </div>
                         <div class="materia-meta">
                             <span class="count-badge">${materia.tps.length} TP(s)</span>
