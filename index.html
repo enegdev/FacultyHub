@@ -232,7 +232,6 @@
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* Estado Expandido / Abierto */
         .materia-card.open {
             border-color: var(--border-hover);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5),
@@ -248,7 +247,6 @@
             transform: scale(1.15);
         }
 
-        /* Lista Desplegable de TPs */
         .tp-wrapper {
             max-height: 0;
             overflow: hidden;
@@ -268,7 +266,6 @@
             gap: 10px;
         }
 
-        /* Botón TP individual */
         .tp-btn {
             background: var(--tp-bg);
             border: 1px solid var(--border-color);
@@ -299,7 +296,6 @@
             gap: 4px;
         }
 
-        /* Floating Watermark Badge */
         .fixed-badge {
             position: fixed;
             bottom: 24px;
@@ -375,7 +371,6 @@
 
 <main class="hub-container">
     <div class="hub-card">
-        <!-- Header Principal -->
         <header class="hub-header">
             <div class="status-pill">
                 <span class="status-dot"></span>
@@ -387,39 +382,27 @@
             </p>
         </header>
 
-        <!-- Lista Dinámica de Materias -->
         <section id="btn-container" class="materia-container">
             <span class="loading-text">🔍 Cargando materias desde GitHub...</span>
         </section>
     </div>
 </main>
 
-<!-- Badge Flotante Fijado -->
 <div class="fixed-badge">
     <span>Desarrollado con <span class="gemini-text">Google Gemini ✨</span> por</span>
     <a href="https://github.com/enegdev" target="_blank" class="author-tag">enegdev</a>
 </div>
 
-<script>
-    // =========================================================
-    // MAPEO DE MATERIAS (Carpeta física -> Nombre formal en pantalla)
-    // Podés usar siglas o nombres largos como clave.
-    // =========================================================
-    const materiasOficiales = {
-        "pv2": "Programación de Videojuegos II",
-        "pv3": "Programación de Videojuegos III",
-        "bd1": "Base de Datos I",
-        "so":  "Sistemas Operativos",
-        "Programacion Videojuegos II": "Programación de Videojuegos II"
-    };
+<!-- Cargar archivo de configuración externo -->
+<script src="config.js"></script>
 
+<script>
     function obtenerNombreOficial(folderName) {
-        // Devuelve el título oficial si existe en el diccionario; si no, limpia guiones
-        return materiasOficiales[folderName] || folderName.replace(/-/g, ' ').replace(/_/g, ' ');
+        const mapa = (typeof materiasOficiales !== 'undefined') ? materiasOficiales : {};
+        return mapa[folderName] || folderName.replace(/-/g, ' ').replace(/_/g, ' ');
     }
 
     function formatTPTitle(tpFolder) {
-        // Convierte "trabajo-practico-1" o "tp1" en "Trabajo Práctico 1"
         const num = tpFolder.replace(/^(trabajo-practico|tp)[-_]?/i, '');
         if (!isNaN(num) && num.trim() !== '') {
             return `Trabajo Práctico ${num}`;
@@ -434,7 +417,6 @@
         const hostParts = window.location.hostname.split('.');
         const pathParts = window.location.pathname.split('/').filter(Boolean);
 
-        // Detecta automáticamente cuenta y repo en GitHub Pages, con fallback local
         const isGitHubPages = window.location.hostname.endsWith('github.io');
         const USER = isGitHubPages ? hostParts[0] : "enegdev";  
         const REPO = (isGitHubPages && pathParts.length > 0) ? pathParts[0] : "Faculty_Hub";  
@@ -443,7 +425,6 @@
         document.title = "Faculty Hub - Centro de Ejercicios";
 
         try {
-            // 1. Escanear carpetas físicas en la raíz del repositorio
             const resRoot = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents?t=${Date.now()}`);
             if (!resRoot.ok) throw new Error("Error consultando el repositorio");
 
@@ -457,7 +438,6 @@
                 return;
             }
 
-            // 2. Escanear subcarpetas (TPs) dentro de cada carpeta
             const materiasData = [];
             for (const carpetaMateria of materiasDirs) {
                 try {
@@ -524,7 +504,6 @@
         }
     }
 
-    // Lógica para desplegar / plegar el acordeón de materias
     function toggleMateria(index) {
         const card = document.getElementById(`card-${index}`);
         const wrapper = document.getElementById(`wrapper-${index}`);
