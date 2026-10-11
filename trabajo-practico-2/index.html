@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ejercicio Interactivo</title>
+    <title>TP 2 - Sincronización y RPCs</title>
     
     <!-- Fuentes Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,52 +66,12 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        /* BADGE MATERIA CON ESTILO GLASSMORPHISM */
-        .subject-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 22px;
-            border-radius: 50px;
-            background: rgba(24, 27, 36, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(168, 85, 247, 0.4);
-            box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.4), 
-                        0 0 20px rgba(168, 85, 247, 0.25);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            user-select: none;
-        }
-
-        .subject-badge:hover {
-            transform: translateY(-2px);
-            border-color: rgba(192, 132, 252, 0.7);
-            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.5), 
-                        0 0 30px rgba(168, 85, 247, 0.45);
-        }
-
-        .subject-badge span#app-subject {
-            background: linear-gradient(135deg, #c084fc 0%, #818cf8 50%, #60a5fa 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .main-title {
+            font-size: 1.6rem;
             font-weight: 800;
-            font-size: 1.2rem;
-            letter-spacing: 0.3px;
-        }
-
-        .subject-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #c084fc;
-            box-shadow: 0 0 10px #c084fc, 0 0 18px #a855f7;
-            animation: pulse-glow 2s infinite alternate;
-            flex-shrink: 0;
-        }
-
-        @keyframes pulse-glow {
-            0% { opacity: 0.7; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1.25); box-shadow: 0 0 14px #c084fc, 0 0 24px #a855f7; }
+            color: var(--text-bright);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .week-badge {
@@ -414,16 +374,13 @@
 <div class="container">
     <!-- Header Principal Simétrico -->
     <div class="main-header">
-        <div class="subject-badge">
-            <span class="subject-dot"></span>
-            <span id="app-subject">TALLER DE DESARROLLO DE JUEGOS MULTIJUGADOR </span>
-        </div>
+        <h1 class="main-title" id="app-main-title">Cargando Repositorio...</h1>
         <span class="week-badge" id="app-subtitle">Cargando Módulo...</span>
     </div>
 
     <!-- Sección del Objetivo del Ejercicio -->
     <div class="objective-card">
-        <h2 class="objective-title" id="obj-title">🎯 Objetivo del Ejercicio</h2>
+        <h2 class="objective-title" id="obj-title">🎯 Objetivo</h2>
         <p class="objective-text" id="obj-desc"></p>
         <p class="objective-subtext" id="obj-subtext"></p>
     </div>
@@ -470,7 +427,7 @@
         <div class="section-title">4. Desafío Extra de Cátedra ⚡</div>
         <div class="challenge-card">
             <p style="color: var(--text-bright); font-weight: 600; font-size: 0.95rem;">
-                Para validar que comprendiste las llamadas remótas (RPC) y la validación de estado, debes implementar la siguiente mecánica adicional:
+                Para validar que comprendiste las llamadas remotas (RPC) y la validación de estado, debes implementar la siguiente mecánica adicional:
             </p>
             <ul style="color: var(--text-main); margin-left: 20px; font-size: 0.9rem; display: flex; flex-direction: column; gap: 8px;">
                 <li><strong>Mecánica de Impacto RPC:</strong> Crea un nuevo método RPC llamado <code>recibir_impacto_rpc()</code> que haga parpadear en color rojo al personaje impactado durante 0.5 segundos y le reste vida.</li>
@@ -504,10 +461,9 @@
 
 <script>
     const EXERCISE_CONFIG = {
-        subject: "TALLER DE DESARROLLO DE JUEGOS MULTIJUGADOR",
-        subtitle: "📅 Semana 7 - Sincronización y Mecánicas RPC",
+        subtitle: "📅 TP 2 - Sincronización y Mecánicas RPC",
         objective: {
-            title: "🎯 Objetivo del Ejercicio",
+            title: "🎯 Objetivo",
             description: "Lograr que el personaje pueda moverse y realizar 2 mecánicas de interacción en red correctamente sincronizadas. Diseñado para múltiples instancias de jugador.",
             subtext: "A continuación, se presenta una guía base como ejemplo a seguir."
         },
@@ -738,8 +694,16 @@
 
     let currentOptionIndex = 0;
 
+    function getRepositoryName() {
+        const pathSegments = window.location.pathname.split('/').filter(Boolean);
+        if (pathSegments.length > 0 && !pathSegments[0].includes('.html')) {
+            return pathSegments[0].replace(/-/g, ' ').replace(/_/g, ' ');
+        }
+        return "TP 2 - REPOSITORIO DE RED";
+    }
+
     function initApp() {
-        document.getElementById('app-subject').innerText = EXERCISE_CONFIG.subject || "TALLER DE DESARROLLO DE JUEGOS MULTIJUGADOR";
+        document.getElementById('app-main-title').innerText = getRepositoryName();
         document.getElementById('app-subtitle').innerText = EXERCISE_CONFIG.subtitle;
         document.getElementById('obj-title').innerHTML = EXERCISE_CONFIG.objective.title;
         document.getElementById('obj-desc').innerHTML = EXERCISE_CONFIG.objective.description;
