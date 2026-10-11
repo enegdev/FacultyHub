@@ -165,7 +165,7 @@
             font-style: italic;
         }
 
-        /* Tarjeta de la Materia (Clickable) */
+        /* Tarjeta de la Materia */
         .materia-card {
             background: var(--item-bg);
             border: 1px solid var(--border-color);
@@ -387,20 +387,46 @@
             </p>
         </header>
 
-        <!-- Lista de Materias -->
+        <!-- Lista Dinámica de Materias -->
         <section id="btn-container" class="materia-container">
             <span class="loading-text">🔍 Cargando materias desde GitHub...</span>
         </section>
     </div>
 </main>
 
-<!-- Badge Flotante Fijado UI/UX -->
+<!-- Badge Flotante Fijado -->
 <div class="fixed-badge">
     <span>Desarrollado con <span class="gemini-text">Google Gemini ✨</span> por</span>
     <a href="https://github.com/enegdev" target="_blank" class="author-tag">enegdev</a>
 </div>
 
 <script>
+    // =========================================================
+    // MAPEO DE MATERIAS (Carpeta física -> Nombre formal en pantalla)
+    // Podés usar siglas o nombres largos como clave.
+    // =========================================================
+    const materiasOficiales = {
+        "pv2": "Programación de Videojuegos II",
+        "pv3": "Programación de Videojuegos III",
+        "bd1": "Base de Datos I",
+        "so":  "Sistemas Operativos",
+        "Programacion Videojuegos II": "Programación de Videojuegos II"
+    };
+
+    function obtenerNombreOficial(folderName) {
+        // Devuelve el título oficial si existe en el diccionario; si no, limpia guiones
+        return materiasOficiales[folderName] || folderName.replace(/-/g, ' ').replace(/_/g, ' ');
+    }
+
+    function formatTPTitle(tpFolder) {
+        // Convierte "trabajo-practico-1" o "tp1" en "Trabajo Práctico 1"
+        const num = tpFolder.replace(/^(trabajo-practico|tp)[-_]?/i, '');
+        if (!isNaN(num) && num.trim() !== '') {
+            return `Trabajo Práctico ${num}`;
+        }
+        return tpFolder.replace(/-/g, ' ').replace(/_/g, ' ');
+    }
+
     async function cargarEjercicios() {
         const container = document.getElementById('btn-container');
         const titleEl = document.getElementById('repo-title');
@@ -408,35 +434,16 @@
         const hostParts = window.location.hostname.split('.');
         const pathParts = window.location.pathname.split('/').filter(Boolean);
 
-        const USER = hostParts[0];  
-        const REPO = pathParts[0];  
+        // Detecta automáticamente cuenta y repo en GitHub Pages, con fallback local
+        const isGitHubPages = window.location.hostname.endsWith('github.io');
+        const USER = isGitHubPages ? hostParts[0] : "enegdev";  
+        const REPO = (isGitHubPages && pathParts.length > 0) ? pathParts[0] : "Faculty_Hub";  
 
-        function formatName(str) {
-            if (!str) return "FACULTY HUB";
-            return str.replace(/-/g, ' ').replace(/_/g, ' ').toUpperCase();
-        }
-
-        // Ejecución fuera de GitHub Pages (ej. local)
-        if (!window.location.hostname.endsWith('github.io') || !USER || !REPO) {
-            const defaultName = formatName(REPO || "FACULTY HUB");
-            titleEl.innerText = defaultName;
-            document.title = defaultName;
-
-            const cache = localStorage.getItem('cache_materias_data');
-            if (cache) {
-                renderizarMaterias(JSON.parse(cache));
-            } else {
-                container.innerHTML = '<span class="loading-text">Detección automática activa al publicar en GitHub Pages.</span>';
-            }
-            return;
-        }
-
-        const formattedTitle = formatName(REPO);
-        titleEl.innerText = formattedTitle;
-        document.title = formattedTitle;
+        titleEl.innerText = "FACULTY HUB";
+        document.title = "Faculty Hub - Centro de Ejercicios";
 
         try {
-            // 1. Escanear carpetas de la raíz (Materias)
+            // 1. Escanear carpetas físicas en la raíz del repositorio
             const resRoot = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents?t=${Date.now()}`);
             if (!resRoot.ok) throw new Error("Error consultando el repositorio");
 
@@ -450,11 +457,11 @@
                 return;
             }
 
-            // 2. Escanear subcarpetas (TPs) de cada Materia
+            // 2. Escanear subcarpetas (TPs) dentro de cada carpeta
             const materiasData = [];
-            for (const materia of materiasDirs) {
+            for (const carpetaMateria of materiasDirs) {
                 try {
-                    const resMateria = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${materia}?t=${Date.now()}`);
+                    const resMateria = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${encodeURIComponent(carpetaMateria)}?t=${Date.now()}`);
                     if (resMateria.ok) {
                         const items = await resMateria.json();
                         const tps = items
@@ -463,13 +470,13 @@
                             .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 
                         materiasData.push({
-                            folderName: materia,
-                            displayName: formatName(materia),
+                            folderName: carpetaMateria,
+                            displayName: obtenerNombreOficial(carpetaMateria),
                             tps: tps
                         });
                     }
                 } catch (err) {
-                    console.error("Error al cargar TPs de " + materia, err);
+                    console.error("Error al cargar TPs de " + carpetaMateria, err);
                 }
             }
 
@@ -505,8 +512,8 @@
                     <div class="tp-wrapper" id="wrapper-${idx}">
                         <div class="tp-list">
                             ${materia.tps.map(tp => `
-                                <a href="./${materia.folderName}/${tp}/" class="tp-btn">
-                                    <span>📄 ${tp}</span>
+                                <a href="./${encodeURIComponent(materia.folderName)}/${encodeURIComponent(tp)}/" class="tp-btn">
+                                    <span>📄 ${formatTPTitle(tp)}</span>
                                     <span class="tp-badge">Abrir ↗</span>
                                 </a>
                             `).join('')}
@@ -517,20 +524,17 @@
         }
     }
 
-    // Función para abrir/cerrar la carpeta de la materia
+    // Lógica para desplegar / plegar el acordeón de materias
     function toggleMateria(index) {
         const card = document.getElementById(`card-${index}`);
         const wrapper = document.getElementById(`wrapper-${index}`);
-
         const isOpen = card.classList.contains('open');
 
-        // Cerrar todas las carpetas abiertas
         document.querySelectorAll('.materia-card').forEach((c, i) => {
             c.classList.remove('open');
             document.getElementById(`wrapper-${i}`).style.maxHeight = null;
         });
 
-        // Si no estaba abierta, la desplegamos
         if (!isOpen) {
             card.classList.add('open');
             wrapper.style.maxHeight = wrapper.scrollHeight + "px";
