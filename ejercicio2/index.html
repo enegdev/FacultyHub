@@ -299,6 +299,17 @@
         .check-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
         .check-card.completed { opacity: 0.4; text-decoration: line-through; }
 
+        /* Extra Challenge Card (Sección 4) */
+        .challenge-card {
+            background: #1e1b2e;
+            border: 1px solid #6366f1;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
         .delivery-card { 
             background: var(--editor-bg); 
             border-radius: 10px; 
@@ -454,9 +465,24 @@
         <div class="checklist" id="expected-checklist"></div>
     </div>
 
-    <!-- Sección 4: Entrega -->
+    <!-- Sección 4: Desafío Extra de Cátedra -->
     <div class="panel">
-        <div class="section-title">4. Entrega del Proyecto</div>
+        <div class="section-title">4. Desafío Extra de Cátedra ⚡</div>
+        <div class="challenge-card">
+            <p style="color: var(--text-bright); font-weight: 600; font-size: 0.95rem;">
+                Para validar que comprendiste las llamadas remótas (RPC) y la validación de estado, debes implementar la siguiente mecánica adicional:
+            </p>
+            <ul style="color: var(--text-main); margin-left: 20px; font-size: 0.9rem; display: flex; flex-direction: column; gap: 8px;">
+                <li><strong>Mecánica de Impacto RPC:</strong> Crea un nuevo método RPC llamado <code>recibir_impacto_rpc()</code> que haga parpadear en color rojo al personaje impactado durante 0.5 segundos y le reste vida.</li>
+                <li><strong>Interacción con la Defensa:</strong> Si el personaje atacado tiene la variable <code>esta_defendiendose == true</code> al recibir el impacto, la función RPC debe anular el daño recibido y mostrar un efecto visual de bloqueo.</li>
+                <li><strong>Comentario explicativo:</strong> Agrega un bloque de comentarios de 3 líneas explicando la diferencia técnica entre llamar a una función localmente y ejecutarla mediante <code>.rpc()</code> en la red.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Sección 5: Entrega del Proyecto -->
+    <div class="panel">
+        <div class="section-title">5. Entrega de Todos los Puntos 🚀</div>
         <div class="delivery-card">
             <div class="delivery-group">
                 <p id="delivery-instructions" style="font-size: 0.95rem; color: var(--text-main);"></p>
