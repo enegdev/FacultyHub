@@ -1,5 +1,5 @@
 // =========================================================
-// FACULTY HUB — DICCIONARIO OFICIAL DE MATERIAS
+// FACULTY HUB — DICCIONARIO OFICIAL DE MATERIAS-
 // "Nombre de la carpeta en GitHub": "Nombre oficial en pantalla"
 // =========================================================
 const materiasOficiales = {
