@@ -49,7 +49,7 @@
             border: 1px solid var(--border-color);
             border-radius: 20px;
             padding: 44px 36px;
-            max-width: 540px;
+            max-width: 560px;
             width: 100%;
             box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6),
                         0 0 30px rgba(99, 102, 241, 0.12);
@@ -121,11 +121,48 @@
             line-height: 1.6;
         }
 
-        /* Container de Botones */
-        .btn-container {
+        /* Contenedores de Materia y TPs */
+        .materia-block {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .materia-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .subject-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .subject-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #818cf8;
+        }
+
+        .badge-count {
+            font-size: 0.75rem;
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            padding: 2px 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(129, 140, 248, 0.3);
+            font-family: 'Fira Code', monospace;
+        }
+
+        .tp-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .loading-text {
@@ -134,6 +171,7 @@
             font-style: italic;
             padding: 24px 0;
             display: block;
+            text-align: center;
         }
 
         /* Botones de Ejercicio / TP */
@@ -273,8 +311,8 @@
     <h1 id="repo-title">Cargando Repositorio...</h1>
     <p class="hub-desc">Selecciona un ejercicio de la guía para comenzar:</p>
     
-    <div id="btn-container" class="btn-container">
-        <span class="loading-text">🔍 Detectando trabajos prácticos en GitHub...</span>
+    <div id="btn-container">
+        <span class="loading-text">🔍 Detectando materias y trabajos prácticos en GitHub...</span>
     </div>
 </div>
 
@@ -295,68 +333,103 @@
         const USER = hostParts[0];  
         const REPO = pathParts[0];  
 
-        // Función para formatear el nombre del repositorio
-        function formatRepoName(str) {
-            if (!str) return "FACULTY LAB";
+        function formatName(str) {
+            if (!str) return "FACULTY HUB";
             return str.replace(/-/g, ' ').replace(/_/g, ' ').toUpperCase();
         }
 
-        // Si no estamos en GitHub Pages (ej. ejecución local), usa caché o nombre por defecto
+        // Si no estamos en GitHub Pages (ej. ejecución local), intenta usar caché
         if (!window.location.hostname.endsWith('github.io') || !USER || !REPO) {
-            titleEl.innerText = formatRepoName(REPO || "FACULTY LAB");
-            document.title = titleEl.innerText;
+            const defaultName = formatName(REPO || "FACULTY HUB");
+            titleEl.innerText = defaultName;
+            document.title = defaultName;
 
-            const cache = localStorage.getItem('cache_carpetas');
+            const cache = localStorage.getItem('cache_materias_data');
             if (cache) {
-                renderizar(JSON.parse(cache));
+                renderizarMaterias(JSON.parse(cache));
             } else {
                 container.innerHTML = '<span class="loading-text">Detección automática activa al publicar en GitHub Pages.</span>';
             }
             return;
         }
 
-        // Asignar el nombre del repositorio detectado
-        const formattedTitle = formatRepoName(REPO);
+        const formattedTitle = formatName(REPO);
         titleEl.innerText = formattedTitle;
         document.title = formattedTitle;
 
         try {
-            // Petición a la API de GitHub evitando el caché
-            const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents?t=${Date.now()}`);
-            if (!res.ok) throw new Error("Límite de API alcanzado o error de red");
+            // 1. Escanear carpetas raíz (Materias)
+            const resRoot = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents?t=${Date.now()}`);
+            if (!resRoot.ok) throw new Error("Límite de API alcanzado o error de red");
 
-            const data = await res.json();
-            
-            // Filtrar carpetas que no sean ocultas
-            const carpetas = data
+            const rootItems = await resRoot.json();
+            const materiasDirs = rootItems
                 .filter(item => item.type === 'dir' && !item.name.startsWith('.'))
-                .map(item => item.name)
-                .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+                .map(item => item.name);
 
-            if (carpetas.length > 0) {
-                localStorage.setItem('cache_carpetas', JSON.stringify(carpetas));
-                renderizar(carpetas);
-            } else {
-                container.innerHTML = '<span class="loading-text">No se encontraron carpetas de ejercicios en la raíz del repositorio.</span>';
+            if (materiasDirs.length === 0) {
+                container.innerHTML = '<span class="loading-text">No se encontraron carpetas de materias en la raíz.</span>';
+                return;
             }
-        } catch (e) {
-            const cache = localStorage.getItem('cache_carpetas');
-            if (cache) {
-                renderizar(JSON.parse(cache));
+
+            // 2. Escanear subcarpetas (TPs) dentro de cada Materia
+            const materiasData = [];
+            for (const materia of materiasDirs) {
+                try {
+                    const resMateria = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${materia}?t=${Date.now()}`);
+                    if (resMateria.ok) {
+                        const items = await resMateria.json();
+                        const tps = items
+                            .filter(item => item.type === 'dir' && !item.name.startsWith('.'))
+                            .map(item => item.name)
+                            .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+                        materiasData.push({
+                            folderName: materia,
+                            displayName: formatName(materia),
+                            tps: tps
+                        });
+                    }
+                } catch (err) {
+                    console.error("Error al cargar TPs de " + materia, err);
+                }
+            }
+
+            if (materiasData.length > 0) {
+                localStorage.setItem('cache_materias_data', JSON.stringify(materiasData));
+                renderizarMaterias(materiasData);
             } else {
-                container.innerHTML = '<span class="loading-text">No se pudieron cargar los ejercicios desde GitHub API.</span>';
+                container.innerHTML = '<span class="loading-text">No se encontraron TPs dentro de las materias.</span>';
+            }
+
+        } catch (e) {
+            const cache = localStorage.getItem('cache_materias_data');
+            if (cache) {
+                renderizarMaterias(JSON.parse(cache));
+            } else {
+                container.innerHTML = '<span class="loading-text">No se pudieron cargar los datos desde GitHub.</span>';
             }
         }
 
-        function renderizar(lista) {
-            container.innerHTML = lista.map(nombre => `
-                <a href="./${nombre}/" class="exercise-btn">
-                    <div class="btn-left">
-                        <span class="folder-icon">📂</span>
-                        <span>${nombre}</span>
+        function renderizarMaterias(listaMaterias) {
+            container.innerHTML = listaMaterias.map(materia => `
+                <div class="materia-block">
+                    <div class="subject-header">
+                        <span class="subject-title">📚 ${materia.displayName}</span>
+                        <span class="badge-count">${materia.tps.length} Módulo(s)</span>
                     </div>
-                    <span class="badge">Abrir ↗</span>
-                </a>
+                    <div class="tp-list">
+                        ${materia.tps.map(tp => `
+                            <a href="./${materia.folderName}/${tp}/" class="exercise-btn">
+                                <div class="btn-left">
+                                    <span class="folder-icon">📂</span>
+                                    <span>${tp}</span>
+                                </div>
+                                <span class="badge">Abrir ↗</span>
+                            </a>
+                        `).join('')}
+                    </div>
+                </div>
             `).join('');
         }
     }
